@@ -1,0 +1,5 @@
+export { branchesAdapter } from './branches.adapter'
+export { customersAdapter } from './customers.adapter'
+export { ordersAdapter } from './orders.adapter'
+export { servicesAdapter } from './services.adapter'
+export { settingsAdapter } from './settings.adapter'

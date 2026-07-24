@@ -1,0 +1,5 @@
+export { ordersRepository } from './orders/orders.repository'
+export { branchesRepository } from './branches/branches.repository'
+export { customersRepository } from './customers/customers.repository'
+export { servicesRepository } from './services/services.repository'
+export { settingsRepository } from './settings/settings.repository'

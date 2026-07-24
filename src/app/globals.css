@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes selectIn {
+  from { opacity: 0; transform: translateY(-4px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  color-scheme: light;
+}
+@font-face {
+  font-family: myFirstFont;
+  src: url(/Dancing_in_the_Rainbow.ttf);
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+input,
+select,
+textarea,
+button {
+  color-scheme: light;
+}
+
+@layer components {
+  .ui-label { @apply mb-2 flex items-center gap-1.5 text-left text-sm font-semibold leading-5 text-slate-700; }
+  .ui-input, .ui-select { @apply block h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-left text-sm text-slate-800 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 hover:border-slate-300 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400; }
+  .ui-select { @apply cursor-pointer appearance-none bg-slate-50 pl-3.5 pr-10 font-medium hover:bg-white; }
+  .ui-select-shell::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: .75rem; box-shadow: inset 0 1px 0 rgba(255,255,255,.7); }
+
+  .admin-panel { @apply relative h-full min-h-[80vh] overflow-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.35)] scroll-smooth sm:p-6; }
+  .admin-title { @apply text-lg font-semibold tracking-tight text-slate-900; }
+  .admin-table { @apply border-separate border-spacing-0 text-sm text-left text-slate-600; width: 100%; }
+  .admin-table thead { position: sticky !important; top: 0; z-index: 20; background: rgba(248, 250, 252, .96) !important; backdrop-filter: blur(10px); }
+  .admin-table th { padding: .75rem 1rem !important; border-bottom: 1px solid #e2e8f0 !important; background: transparent !important; color: #64748b !important; font-size: .68rem !important; font-weight: 650 !important; letter-spacing: .055em !important; text-transform: uppercase; white-space: nowrap; }
+  .admin-table tbody tr { background: white !important; transition: background-color .15s ease; }
+  .admin-table tbody tr:hover { background: #f8fafc !important; }
+  .admin-table td { padding: .8rem 1rem !important; border-bottom: 1px solid #f1f5f9 !important; color: #334155; vertical-align: middle; }
+  .admin-table tbody tr:last-child td { border-bottom: 0 !important; }
+  .admin-table input, .admin-table select, .admin-table textarea { border: 1px solid transparent !important; border-radius: .5rem !important; background: transparent !important; padding: .5rem .65rem !important; color: #334155 !important; box-shadow: none !important; outline: none; transition: .15s ease; }
+  .admin-table input:hover, .admin-table select:hover, .admin-table textarea:hover { background: white !important; border-color: #e2e8f0 !important; }
+  .admin-table input:focus, .admin-table select:focus, .admin-table textarea:focus { background: white !important; border-color: #22d3ee !important; box-shadow: 0 0 0 3px rgba(34,211,238,.12) !important; }
+  .admin-table .ui-select { min-width: 9rem; background: #f8fafc !important; border-color: #e2e8f0 !important; padding-left: .875rem !important; padding-right: 2.25rem !important; font-weight: 600; }
+  .admin-table .ui-select:hover { background: white !important; border-color: #cbd5e1 !important; }
+  .admin-search { @apply h-10 w-full max-w-[300px] rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-2 focus:ring-cyan-100; }
+  .professional-sidebar { @apply h-full overflow-hidden bg-white pb-6; }
+  .professional-sidebar ul { @apply min-h-full space-y-1.5 bg-gradient-to-b from-white via-white to-slate-50 pb-6 text-sm; }
+  .professional-sidebar li:not(:first-child) { @apply px-4; }
+  .professional-sidebar li:not(:first-child) > a, .professional-sidebar li:not(:first-child) > button { @apply min-h-11 w-full rounded-xl border border-transparent bg-transparent px-3 py-2.5 font-medium text-slate-600 transition-all duration-200 hover:border-cyan-100 hover:bg-cyan-50 hover:text-cyan-800; }
+  .professional-sidebar li:not(:first-child) svg { @apply h-5 w-5 shrink-0 opacity-70 transition-all; }
+  .professional-sidebar li:not(:first-child):hover svg { @apply opacity-100; }
+  .professional-sidebar span { @apply text-slate-700; }
+}
+
+@layer base {
+  label { @apply text-sm font-semibold text-slate-700; }
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(.ui-input),
+  select:not(.ui-select), textarea {
+    border-color: #e2e8f0;
+    color: #334155;
+    transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+  select:focus, textarea:focus {
+    border-color: #22d3ee !important;
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, .12) !important;
+    outline: none !important;
+  }
+  input::placeholder, textarea::placeholder { color: #94a3b8; }
+  button { transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .15s ease; }
+  button:focus-visible { outline: 2px solid #22d3ee; outline-offset: 2px; }
+  button:disabled { cursor: not-allowed; opacity: .55; }
+}
+
+
+
+@media (min-width: 1024px) {
+
+  /* Designing for scroll-bar */
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    z-index: 100000000000000000000000;
+
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: rgb(255, 255, 255);
+    border-radius: 5px;
+    z-index: 100000000000000000000000;
+
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #a8a8a8;
+    border-radius: 5px;
+    z-index: 100000000000000000000000;
+}
+}
+
+
+
+

@@ -1,0 +1,65 @@
+.tag {
+    box-sizing: border-box;
+    display: block;
+    position: relative;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: var(--font-weight-light);
+    width: 90%;
+    min-width: 110px;
+    max-width: 110px;
+    padding: 1px 1px;
+    border-radius: 10px 5px 10px 5px;
+
+    transition-duration: .5s;
+}
+
+.tagPrimary {
+    color: white;
+    background-color: var(--link-color);
+    border: 1px solid #4cbb7e;
+}
+
+.tagPrimary:hover {
+    color: #000000;
+    background-color: #F1BA06;
+    border: 2px solid #ffffff3c;
+}
+
+.tagSecondary {
+    color: #4cbb7e;
+    background-color: white;
+    border: 1px solid #4cbb7e;
+}
+
+.tagSecondary:hover {
+    color: white;
+    background-color: #294B98;
+    border: 2px solid #7d99da;
+}
+.buttonSecondaryGreen {
+    width: 100%;
+    color: #ffffff;
+    background-color: #14EFA5;
+    border: 2px solid #ffffff3c;
+}
+
+.buttonSecondaryPDF:hover {
+    color: white;
+    background-color: #294B98;
+    border: 2px solid #7d99da;
+}
+.buttonTransparent {
+    height: 35px;
+    max-width: 200px;
+    color: rgb(0, 0, 0);
+    background-color: #00000000;
+    border: 2px solid #7d99da;
+
+}
+
+.buttonTransparent:hover {
+    color: #000000;
+    background-color: #F1BA06;
+    border: 2px solid #ffffff3c;
+}
