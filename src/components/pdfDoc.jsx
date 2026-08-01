@@ -119,7 +119,6 @@ function ReceptionReceiptDocument({ order }) {
                 <View style={styles.line}><Text style={styles.key}>Hora recepción:</Text><Text style={styles.value}>{receivedAt.time}</Text></View>
                 <View style={styles.line}><Text style={styles.key}>Cliente:</Text><Text style={styles.value}>{order.nombre || ''}</Text></View>
                 <View style={styles.line}><Text style={styles.key}>Celular:</Text><Text style={styles.value}>{order.whatsapp || ''}</Text></View>
-                <View style={styles.line}><Text style={styles.key}>CI:</Text><Text style={styles.value}>{order.CI || ''}</Text></View>
             </View>
 
             <View style={styles.section}>

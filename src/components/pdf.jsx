@@ -93,7 +93,6 @@ function DeliveryReceiptDocument({ order }) {
                 <View style={styles.line}><Text style={styles.key}>Fecha de entrega:</Text><Text style={styles.value}>{order['fecha entrega'] || ''}</Text></View>
                 <View style={styles.line}><Text style={styles.key}>Receptor:</Text><Text style={styles.value}>{order['nombre receptor'] || ''}</Text></View>
                 <View style={styles.line}><Text style={styles.key}>Celular:</Text><Text style={styles.value}>{order['whatsapp receptor'] || ''}</Text></View>
-                <View style={styles.line}><Text style={styles.key}>CI:</Text><Text style={styles.value}>{order['CI receptor'] || ''}</Text></View>
             </View>
 
             <View style={styles.section}>
