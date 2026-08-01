@@ -693,13 +693,14 @@ function Home() {
                                 <Input type="text" name="whatsapp" id="whatsapp" onChange={onChangeHandler} valu={state.whatsapp || ''} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " reference={inputRefWhatsApp} placeholder="" require />
                             </div>
 
-                            {hasClientData
-                                    ? <a href='#Payment' className="block" ><Button type="button" theme="Primary">Continuar</Button></a>
-
+                            <div className="w-full self-start md:col-span-2">
+                                {hasClientData
+                                    ? <a href='#Payment' className="block w-full"><Button type="button" theme="Primary" styled="h-11 min-h-11 max-h-11">Continuar</Button></a>
                                     : <a href='#Client'
-                                        className={`block`}
-                                        onClick={handlerNext}><Button type="button" theme="Primary">Continuar</Button></a>
+                                        className="block w-full"
+                                        onClick={handlerNext}><Button type="button" theme="Primary" styled="h-11 min-h-11 max-h-11">Continuar</Button></a>
                                 }
+                            </div>
                             
                         </form>
                     }
@@ -774,12 +775,13 @@ function Home() {
                                 {isVelox && <p className="mt-1.5 text-xs font-medium text-slate-500">{veloxUnitSurcharge} Bs. por cada unidad seleccionada. {veloxType === 'same_day' ? 'Aplicación automática por entrega hoy.' : automaticVelox ? 'Aplicación automática por entrega mañana hasta las 12:00.' : 'Aplicación manual para una fecha posterior.'}</p>}
 
                             </div>
-                            {pdf === false && <Button type="submit" theme={isSubmitting ? 'Loading' : 'Primary'} disabled={hasInvalidPaymentAmount || isSubmitting}>Registrar</Button>}
-                            {pdf && <div>
-                                <Button type="button" theme="Danger" click={finish}>Finalizar</Button>
-                            </div>
-                            }
-                            {pdf && pdfDB && <InvoicePDF i={{ ...pdfDB }} />}
+                            {pdf === false && <div className="w-full self-start md:col-span-2">
+                                <Button type="submit" theme={isSubmitting ? 'Loading' : 'Primary'} styled="h-11 min-h-11 max-h-11" disabled={hasInvalidPaymentAmount || isSubmitting}>Registrar</Button>
+                            </div>}
+                            {pdf && <div className="grid w-full grid-cols-2 items-stretch gap-3 md:col-span-2">
+                                {pdfDB && <InvoicePDF i={{ ...pdfDB }} buttonStyled="h-11 min-h-11 max-h-11" />}
+                                <Button type="button" theme="Danger" styled="h-11 min-h-11 max-h-11" click={finish}>Finalizar</Button>
+                            </div>}
                         </form>
                     }
                 </div >}
