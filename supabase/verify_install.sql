@@ -45,6 +45,27 @@ begin
     raise exception 'Faltan funciones operativas requeridas.';
   end if;
 
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'orders'
+      and column_name = 'velox_type' and udt_name = 'velox_type'
+  ) or not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'orders'
+      and column_name = 'velox_unit_surcharge_snapshot'
+  ) then
+    raise exception 'El modelo persistente de Velox no está instalado correctamente.';
+  end if;
+
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and ((table_name = 'orders' and column_name = 'is_velox')
+        or (table_name = 'business_settings' and column_name = 'velox_surcharge'))
+  ) then
+    raise exception 'Todavía existen columnas Velox obsoletas.';
+  end if;
+
   if has_function_privilege('authenticated', 'public.bootstrap_first_admin(text)', 'EXECUTE') then
     raise exception 'bootstrap_first_admin no debe ser ejecutable por authenticated.';
   end if;

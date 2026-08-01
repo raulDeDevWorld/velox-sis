@@ -43,9 +43,10 @@ export function orderToLegacy(row) {
     delivery_paid_at: row.delivery_paid_at,
     ['metodo pago recepcion']: row.reception_payment_method,
     ['metodo pago entrega']: row.delivery_payment_method,
-    velox: row.is_velox, sucursal: row.branches?.name,
+    velox: Boolean(row.velox_type), veloxType: row.velox_type, sucursal: row.branches?.name,
     pickup_at: row.pickup_at, delivered_at: row.delivered_at, delivered_by: row.delivered_by,
     adicional: row.velox_surcharge_snapshot,
+    veloxUnitSurcharge: row.velox_unit_surcharge_snapshot,
     velox_surcharge_snapshot: row.velox_surcharge_snapshot,
     fechaDeEntrega: legacyPickupDate(row.pickup_at),
     ['fecha para recojo']: legacyPickupDate(row.pickup_at),
@@ -120,7 +121,8 @@ function orderPayload(value) {
   if ('delivery_payment_amount' in value) payload.delivery_payment_amount = number(value.delivery_payment_amount)
   if ('delivery_payment_method' in value) payload.delivery_payment_method = value.delivery_payment_method || null
   if ('delivery_paid_at' in value) payload.delivery_paid_at = value.delivery_paid_at
-  if ('velox' in value) payload.is_velox = Boolean(value.velox)
+  if ('veloxType' in value) payload.velox_type = value.veloxType
+  else if ('velox' in value) payload.is_velox = Boolean(value.velox)
   if ('velox_surcharge_snapshot' in value || 'adicional' in value) payload.velox_surcharge_snapshot = number(value.velox_surcharge_snapshot ?? value.adicional)
   if ('pickup_at' in value) payload.pickup_at = value.pickup_at
   if ('delivered_at' in value) payload.delivered_at = value.delivered_at

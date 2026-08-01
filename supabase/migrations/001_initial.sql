@@ -6,6 +6,7 @@ create extension if not exists pgcrypto;
 
 create type public.order_status as enum ('Pendiente', 'Concluido', 'Entregado', 'Cancelado');
 create type public.payment_method as enum ('Efectivo', 'QR', 'Transferencia', 'Tarjeta', 'Otro');
+create type public.velox_type as enum ('same_day', 'later');
 
 create table public.app_roles (
   name text primary key,
@@ -70,7 +71,8 @@ create table public.customers (
 create table public.business_settings (
   id boolean primary key default true check (id),
   whatsapp text,
-  velox_surcharge numeric(12,2) not null default 0 check (velox_surcharge >= 0),
+  velox_same_day_surcharge numeric(12,2) not null default 0 check (velox_same_day_surcharge >= 0),
+  velox_later_surcharge numeric(12,2) not null default 0 check (velox_later_surcharge >= 0),
   qr_image_url text,
   updated_at timestamptz not null default now()
 );
@@ -97,8 +99,8 @@ create table public.reception_methods (
   deleted_by uuid references auth.users(id)
 );
 
-insert into public.business_settings (id, whatsapp, velox_surcharge)
-values (true, '', 0)
+insert into public.business_settings (id, whatsapp, velox_same_day_surcharge, velox_later_surcharge)
+values (true, '', 0, 0)
 on conflict (id) do nothing;
 
 insert into public.service_categories (name, sort_order) values
@@ -156,9 +158,10 @@ create table public.orders (
   delivery_paid_at timestamptz,
   amount_paid numeric(12,2) generated always as (reception_payment_amount + delivery_payment_amount) stored,
   balance numeric(12,2) generated always as (total - discount - reception_payment_amount - delivery_payment_amount) stored,
-  is_velox boolean not null default false,
+  velox_type public.velox_type,
+  velox_unit_surcharge_snapshot numeric(12,2) not null default 0 check (velox_unit_surcharge_snapshot >= 0),
   velox_surcharge_snapshot numeric(12,2) not null default 0 check (velox_surcharge_snapshot >= 0),
-  pickup_at timestamptz,
+  pickup_at timestamptz not null,
   delivered_at timestamptz,
   delivered_by uuid references auth.users(id),
   receiver_name text,
@@ -171,6 +174,10 @@ create table public.orders (
   deleted_at timestamptz,
   deleted_by uuid references auth.users(id),
   check (total - discount - reception_payment_amount - delivery_payment_amount >= 0),
+  check (
+    (velox_type is null and velox_unit_surcharge_snapshot = 0 and velox_surcharge_snapshot = 0)
+    or velox_type is not null
+  ),
   check (
     (reception_payment_amount = 0 and reception_payment_method is null)
     or
@@ -796,7 +803,8 @@ declare
   v_total numeric(12,2);
   v_velox_total numeric(12,2);
   v_pickup_at timestamptz;
-  v_is_velox boolean;
+  v_velox_type public.velox_type;
+  v_pricing_changed boolean;
   v_velox_unit_surcharge numeric(12,2);
   v_regular_price numeric(12,2);
   v_item_surcharge numeric(12,2);
@@ -824,20 +832,53 @@ begin
   v_status := coalesce((p_order->>'status')::public.order_status, v_existing.status, 'Pendiente'::public.order_status);
   v_total := coalesce((p_order->>'total')::numeric, v_existing.total, 0);
   v_pickup_at := coalesce(nullif(p_order->>'pickup_at', '')::timestamptz, v_existing.pickup_at);
-  v_is_velox := case
-    when v_existing.id is null or p_order ? 'pickup_at' or p_order ? 'is_velox' then
-      coalesce((p_order->>'is_velox')::boolean, false)
-      or (
-        v_pickup_at is not null
-        and (v_pickup_at at time zone 'America/La_Paz')::date
-          = (now() at time zone 'America/La_Paz')::date
-      )
-    else v_existing.is_velox
-  end;
-  select case when v_is_velox then velox_surcharge else 0 end
-  into v_velox_unit_surcharge
-  from public.business_settings
-  where id = true;
+  v_pricing_changed := v_existing.id is null or p_order ? 'pickup_at' or p_order ? 'velox_type' or p_order ? 'is_velox';
+
+  if v_existing.id is null and v_pickup_at is null then
+    raise exception using errcode = 'P0001', message = 'PICKUP_DATE_REQUIRED';
+  end if;
+
+  if (v_existing.id is null or p_order ? 'pickup_at')
+     and (v_pickup_at at time zone 'America/La_Paz')::date
+       < (now() at time zone 'America/La_Paz')::date then
+    raise exception using errcode = 'P0001', message = 'PICKUP_DATE_IN_PAST';
+  end if;
+
+  if v_pricing_changed then
+    if (v_pickup_at at time zone 'America/La_Paz')::date
+       = (now() at time zone 'America/La_Paz')::date then
+      v_velox_type := 'same_day'::public.velox_type;
+    elsif p_order ? 'velox_type' then
+      v_velox_type := nullif(p_order->>'velox_type', '')::public.velox_type;
+    elsif p_order ? 'is_velox' then
+      v_velox_type := case when coalesce((p_order->>'is_velox')::boolean, false)
+        then 'later'::public.velox_type else null end;
+    else
+      v_velox_type := null;
+    end if;
+
+    if v_velox_type = 'same_day'
+       and (v_pickup_at at time zone 'America/La_Paz')::date
+         <> (now() at time zone 'America/La_Paz')::date then
+      raise exception using errcode = 'P0001', message = 'INVALID_VELOX_TYPE_FOR_PICKUP';
+    end if;
+
+    if v_existing.id is not null and p_items is null then
+      raise exception using errcode = 'P0001', message = 'ORDER_ITEMS_REQUIRED_FOR_PRICING_CHANGE';
+    end if;
+
+    select case v_velox_type
+      when 'same_day' then velox_same_day_surcharge
+      when 'later' then velox_later_surcharge
+      else 0
+    end
+    into v_velox_unit_surcharge
+    from public.business_settings
+    where id = true;
+  else
+    v_velox_type := v_existing.velox_type;
+    v_velox_unit_surcharge := v_existing.velox_unit_surcharge_snapshot;
+  end if;
   v_velox_unit_surcharge := coalesce(v_velox_unit_surcharge, 0);
   v_velox_total := coalesce(v_existing.velox_surcharge_snapshot, 0);
 
@@ -930,7 +971,8 @@ begin
       customer_address, customer_whatsapp, status, total, discount,
       reception_payment_amount, reception_payment_method, reception_paid_at,
       delivery_payment_amount, delivery_payment_method, delivery_paid_at,
-      is_velox, velox_surcharge_snapshot, pickup_at, receiver_name, receiver_document,
+      velox_type, velox_unit_surcharge_snapshot, velox_surcharge_snapshot,
+      pickup_at, receiver_name, receiver_document,
       receiver_whatsapp, delivery_notes, delivered_at, delivered_by, created_by
     ) values (
       p_order_id, p_branch_id, v_customer_id, p_order->>'customer_name',
@@ -943,7 +985,8 @@ begin
       coalesce((p_order->>'delivery_payment_amount')::numeric, 0),
       nullif(p_order->>'delivery_payment_method', '')::public.payment_method,
       case when coalesce((p_order->>'delivery_payment_amount')::numeric, 0) > 0 then coalesce(nullif(p_order->>'delivery_paid_at', '')::timestamptz, now()) else null end,
-      v_is_velox,
+      v_velox_type,
+      v_velox_unit_surcharge,
       v_velox_total,
       v_pickup_at,
       p_order->>'receiver_name',
@@ -981,7 +1024,8 @@ begin
             then coalesce(nullif(p_order->>'delivery_paid_at', '')::timestamptz, delivery_paid_at, now())
           else null
         end,
-        is_velox = v_is_velox,
+        velox_type = v_velox_type,
+        velox_unit_surcharge_snapshot = v_velox_unit_surcharge,
         velox_surcharge_snapshot = v_velox_total,
         pickup_at = v_pickup_at,
         receiver_name = coalesce(p_order->>'receiver_name', receiver_name),

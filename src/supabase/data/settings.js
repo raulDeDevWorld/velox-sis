@@ -18,7 +18,8 @@ export function settingsToLegacy(settings, categories = [], receptionMethods = [
     whatsapp: settings?.whatsapp || '',
     categoria: categories.map(row => row.name),
     'recepcion por': receptionMethods.map(row => row.name),
-    adicional: settings?.velox_surcharge || 0,
+    adicionalDia: settings?.velox_same_day_surcharge || 0,
+    adicionalPosterior: settings?.velox_later_surcharge ?? 0,
     url: settings?.qr_image_url || ''
   }
 }
@@ -66,7 +67,8 @@ export async function upsertSettings(value, callback) {
   const row = {
     id: true,
     whatsapp: value.whatsapp,
-    velox_surcharge: value.adicional,
+    velox_same_day_surcharge: value.adicionalDia,
+    velox_later_surcharge: value.adicionalPosterior,
     qr_image_url: value.url
   }
   Object.keys(row).forEach(key => row[key] === undefined && delete row[key])

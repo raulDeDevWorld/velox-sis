@@ -6,7 +6,7 @@
 --
 -- Uso desde Supabase SQL Editor:
 --   1. Ejecutar este archivo completo.
---   2. Ejecutar supabase/migrations/001_initial.sql completo.
+--   2. Ejecutar en orden todos los archivos de supabase/migrations/.
 
 begin;
 
@@ -35,4 +35,4 @@ alter default privileges for role postgres in schema public
 
 commit;
 
-select 'Reset terminado. Ahora ejecuta supabase/migrations/001_initial.sql' as siguiente_paso;
+select 'Reset terminado. Ahora ejecuta en orden todos los archivos de supabase/migrations/' as siguiente_paso;

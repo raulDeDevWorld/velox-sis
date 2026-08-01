@@ -13,6 +13,7 @@ import {
   getMonthYear,
   isBusinessDateToday
 } from '../src/utils/getDate.js'
+import { resolveVeloxType } from '../src/utils/velox.js'
 
 test('generateUUID returns a valid RFC 4122 v4 UUID', () => {
   assert.match(generateUUID(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
@@ -35,6 +36,14 @@ test('business date comparisons use the Bolivia calendar day', () => {
   assert.equal(getBusinessDate(instant), '2026-07-23')
   assert.equal(isBusinessDateToday('2026-07-23', instant), true)
   assert.equal(isBusinessDateToday('2026-07-24', instant), false)
+})
+
+test('Velox type is automatic today, manual later, and unavailable in the past', () => {
+  const instant = new Date('2026-07-24T02:30:00.000Z') // 23 de julio en Bolivia
+  assert.equal(resolveVeloxType('2026-07-23', false, instant), 'same_day')
+  assert.equal(resolveVeloxType('2026-07-24', false, instant), null)
+  assert.equal(resolveVeloxType('2026-07-24', true, instant), 'later')
+  assert.equal(resolveVeloxType('2026-07-22', true, instant), null)
 })
 
 test('PDF ticket sizing grows with wrapped content while preserving 80 mm width', () => {

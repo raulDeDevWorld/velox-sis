@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const schema = readFileSync(new URL('../supabase/migrations/001_initial.sql', import.meta.url), 'utf8')
+const splitVeloxMigration = readFileSync(new URL('../supabase/migrations/002_split_velox_surcharges.sql', import.meta.url), 'utf8')
 const personalPage = readFileSync(new URL('../src/app/(with-auth)/Personal/page.jsx', import.meta.url), 'utf8')
 const hardening = readFileSync(new URL('../supabase/harden_personal_permissions.sql', import.meta.url), 'utf8')
 
@@ -40,6 +41,24 @@ test('new orders require a non-empty item collection', () => {
   assert.match(schema, /v_existing\.id is null and p_items is null/)
   assert.match(schema, /v_existing\.id is null and jsonb_array_length\(p_items\) = 0/)
   assert.match(schema, /message = 'ORDER_ITEMS_REQUIRED'/)
+})
+
+test('Velox migration defines the final RPC explicitly and enforces pricing rules', () => {
+  assert.match(splitVeloxMigration, /create or replace function public\.upsert_order_with_items/)
+  assert.match(splitVeloxMigration, /velox_same_day_surcharge/)
+  assert.match(splitVeloxMigration, /velox_later_surcharge/)
+  assert.match(splitVeloxMigration, /velox_unit_surcharge_snapshot/)
+  assert.match(splitVeloxMigration, /PICKUP_DATE_IN_PAST/)
+  assert.match(splitVeloxMigration, /ORDER_ITEMS_REQUIRED_FOR_PRICING_CHANGE/)
+  assert.doesNotMatch(splitVeloxMigration, /pg_get_functiondef|regexp_replace\(v_definition/)
+})
+
+test('canonical Velox schema stores an immutable type and unit-price snapshot', () => {
+  assert.match(schema, /create type public\.velox_type as enum \('same_day', 'later'\)/)
+  assert.match(schema, /velox_type public\.velox_type/)
+  assert.match(schema, /velox_unit_surcharge_snapshot numeric/)
+  assert.doesNotMatch(schema, /^\s*is_velox boolean/m)
+  assert.doesNotMatch(schema, /^\s*velox_surcharge numeric/m)
 })
 
 test('Personal page contains no call to an undefined redirect helper', () => {

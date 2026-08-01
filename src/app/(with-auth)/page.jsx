@@ -21,11 +21,12 @@ import { getCurrentHash } from '@/shared'
 import { customersRepository, ordersRepository, servicesRepository } from '@/features'
 import { useReactPath } from '@/HOCs/useReactPath'
 import { useMask } from '@react-input/mask';
-import { getDayMonthYearHour, getMonthYear, formatDayMonthYear, formatDayMonthYearInput, getDayMonthYearHourPluss3, isBusinessDateToday } from '@/utils/getDate'
+import { getBusinessDate, getDayMonthYearHour, getMonthYear, formatDayMonthYear, formatDayMonthYearInput, getDayMonthYearHourPluss3, isBusinessDateToday } from '@/utils/getDate'
 import { generateUUID } from '@/utils/UIDgenerator'
 import Link from 'next/link'
 import dynamic from "next/dynamic";
 import { assignedBranchId, normalizeRole } from '@/utils/roleAccess'
+import { resolveVeloxType } from '@/utils/velox'
 const InvoicePDF = dynamic(() => import("@/components/pdfDoc"), {
     ssr: false,
 });
@@ -58,6 +59,10 @@ const getErrorMessage = error => {
     if (technicalMessage.includes('INVALID_ORDER_ITEM')) return 'Hay un servicio con cantidad inválida. La cantidad debe ser mayor que cero.'
     if (technicalMessage.includes('ORDER_ITEMS_REQUIRED')) return 'La orden debe contener al menos un servicio.'
     if (technicalMessage.includes('PAYMENT_EXCEEDS_TOTAL')) return 'El pago y el descuento superan el total confirmado por Supabase. Revisa los importes.'
+    if (technicalMessage.includes('PICKUP_DATE_REQUIRED')) return 'La fecha de entrega es obligatoria.'
+    if (technicalMessage.includes('PICKUP_DATE_IN_PAST')) return 'La fecha de entrega no puede estar en el pasado.'
+    if (technicalMessage.includes('INVALID_VELOX_TYPE_FOR_PICKUP')) return 'El tipo de Velox no corresponde a la fecha de entrega seleccionada.'
+    if (technicalMessage.includes('ORDER_ITEMS_REQUIRED_FOR_PRICING_CHANGE')) return 'Para cambiar la fecha o el tipo de Velox es necesario volver a confirmar los servicios.'
     if (technicalMessage.includes('BRANCH_UNAUTHORIZED') || technicalMessage.includes('No autorizado')) return 'No tienes permisos para registrar órdenes en esta sucursal.'
     if (technicalMessage.includes('ORDER_CONFIRMATION_NOT_FOUND')) return 'La orden fue procesada, pero no se pudo confirmar su lectura. Revisa Pendientes antes de volver a intentarlo.'
     if (/fetch|network|Failed to fetch/i.test(technicalMessage)) return 'No se pudo conectar con Supabase. La orden no fue registrada; verifica tu conexión e inténtalo nuevamente.'
@@ -170,7 +175,11 @@ function Home() {
         ? formatDayMonthYearInput(state['fecha para recojo'])
         : getDayMonthYearHourPluss3()
     const automaticVelox = isBusinessDateToday(selectedPickupDate)
-    const isVelox = automaticVelox || velox
+    const veloxType = resolveVeloxType(selectedPickupDate, velox)
+    const isVelox = Boolean(veloxType)
+    const veloxUnitSurcharge = automaticVelox
+        ? toAmount(perfil?.adicionalDia)
+        : toAmount(perfil?.adicionalPosterior)
     const pricedCart = Object.fromEntries(Object.entries(cart).map(([itemId, cartItem]) => {
         const currentService = servicios?.[itemId] || cartItem
         return [itemId, {
@@ -178,7 +187,7 @@ function Home() {
             cantidad: cartItem.cantidad,
             observacion: cartItem.observacion,
             costo: getServicePrice(currentService, 'costo 24 hrs', branchId),
-            adicional: isVelox ? toAmount(perfil?.adicional) : 0
+            adicional: isVelox ? veloxUnitSurcharge : 0
         }]
     }))
     const cartTotal = calculateCartTotal(pricedCart)
@@ -216,6 +225,7 @@ function Home() {
         setState({ ...state, [e.target.name]: e.target.value })
     }
     function onChangeHandlerDate(e) {
+        setVelox(false)
         setState({ ...state, [e.target.name]: formatDayMonthYear(e.target.value) })
     }
 
@@ -332,6 +342,7 @@ function Home() {
                     estado: 'Pendiente',
                     ['sucursal uuid']: branchId,
                     velox: isVelox,
+                    veloxType,
                     adicional: veloxSurcharge,
                     total: orderTotal,
                     saldo: balance
@@ -694,7 +705,7 @@ function Home() {
                             </div>}
                             <div>
                                 <Label htmlFor="fecha para recojo" required>Fecha para entrega</Label>
-                                <Input type="date" name="fecha para recojo" id="email" onChange={onChangeHandlerDate} defValue={state['fecha para recojo'] && state['fecha para recojo'] !== undefined ? formatDayMonthYearInput(state['fecha para recojo']) : getDayMonthYearHourPluss3()} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="" require />
+                                <Input type="date" name="fecha para recojo" id="fecha-para-recojo" min={getBusinessDate()} onChange={onChangeHandlerDate} defValue={state['fecha para recojo'] && state['fecha para recojo'] !== undefined ? formatDayMonthYearInput(state['fecha para recojo']) : getDayMonthYearHourPluss3()} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="" require />
                             </div>
                             <div>
                                 <Label htmlFor="hora para recojo" required>Hora para prenda</Label>
@@ -719,21 +730,23 @@ function Home() {
                                 </p>}
                             </div>
                             <div className=''>
-                                <Label htmlFor="velox">Velox</Label>
+                                <Label htmlFor="velox">{automaticVelox ? 'Velox del día' : 'Velox después del día'}</Label>
                                 <div className='flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-slate-50'>
-                                    {isVelox ? <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={automaticVelox ? undefined : handlerLessVelox}>
+                                    <button type="button" disabled={automaticVelox} onClick={isVelox ? handlerLessVelox : handlerPlussVelox} className="rounded-full disabled:cursor-not-allowed" aria-pressed={isVelox} aria-label={automaticVelox ? 'Velox del día aplicado automáticamente' : isVelox ? 'Desactivar Velox' : 'Activar Velox'}>
+                                    {isVelox ? <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <circle cx="12.5" cy="12.5" r="12.5" fill="#32CD32" />
                                         <path fillRule="evenodd" clipRule="evenodd" d="M4 13.5L6.16667 11.3333L10.5 15.6667L19.1667 7L21.3333 9.16667L10.5 20L4 13.5Z" fill="white" />
                                     </svg>
-                                        : <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={handlerPlussVelox}>
+                                        : <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="12.5" cy="12.5" r="12.5" fill="#9ca3af" />
                                             <path fillRule="evenodd" clipRule="evenodd" d="M4 13.5L6.16667 11.3333L10.5 15.6667L19.1667 7L21.3333 9.16667L10.5 20L4 13.5Z" fill="white" />
                                         </svg>}
+                                    </button>
                                     <span className={`text-sm font-bold ${isVelox ? 'text-emerald-700' : 'text-slate-400'}`}>
                                         {isVelox ? `+ ${veloxSurcharge} Bs.` : 'Sin adicional'}
                                     </span>
                                 </div>
-                                {isVelox && <p className="mt-1.5 text-xs font-medium text-slate-500">{toAmount(perfil?.adicional)} Bs. por cada unidad seleccionada.</p>}
+                                {isVelox && <p className="mt-1.5 text-xs font-medium text-slate-500">{veloxUnitSurcharge} Bs. por cada unidad seleccionada. {automaticVelox ? 'Aplicación automática por entrega hoy.' : 'Aplicación manual para una fecha posterior.'}</p>}
 
                             </div>
                             {pdf === false && <a href='#Client' className="hidden md:block"><Button type="button" theme="Transparent">Atras</Button></a>}

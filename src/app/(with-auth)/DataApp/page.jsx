@@ -148,7 +148,8 @@ function Home() {
     const { user, setUserSuccess, perfil, setPerfil, modal, setModal } = useUser()
     const [business, setBusiness] = useState({
         whatsapp: '',
-        adicional: 0
+        adicionalDia: 0,
+        adicionalPosterior: 0
     })
     const [catalog, setCatalog] = useState({ categories: [], receptionMethods: [] })
     const [postImage, setPostImage] = useState(null)
@@ -160,7 +161,8 @@ function Home() {
     useEffect(() => {
         setBusiness({
             whatsapp: perfil?.whatsapp || '',
-            adicional: perfil?.adicional ?? 0
+            adicionalDia: perfil?.adicionalDia ?? 0,
+            adicionalPosterior: perfil?.adicionalPosterior ?? 0
         })
     }, [perfil])
 
@@ -211,7 +213,8 @@ function Home() {
         event.preventDefault()
         const data = {
             whatsapp: business.whatsapp,
-            adicional: Number(business.adicional || 0),
+            adicionalDia: Number(business.adicionalDia || 0),
+            adicionalPosterior: Number(business.adicionalPosterior || 0),
         }
 
         try {
@@ -297,8 +300,14 @@ function Home() {
                                 <Input type="text" name="whatsapp" onChange={handleBusinessChange} reference={inputRefWhatsApp} valu={business.whatsapp} require />
                             </div>
                             <div>
-                                <Label required>Adicional Velox</Label>
-                                <Input type="number" name="adicional" onChange={handleBusinessChange} valu={business.adicional} require />
+                                <Label required>Velox del día</Label>
+                                <Input type="number" name="adicionalDia" min="0" step="0.01" onChange={handleBusinessChange} valu={business.adicionalDia} require />
+                                <p className="mt-1.5 text-xs text-slate-500">Se aplica automáticamente a entregas del mismo día.</p>
+                            </div>
+                            <div>
+                                <Label required>Velox después del día</Label>
+                                <Input type="number" name="adicionalPosterior" min="0" step="0.01" onChange={handleBusinessChange} valu={business.adicionalPosterior} require />
+                                <p className="mt-1.5 text-xs text-slate-500">Se aplica manualmente a entregas de fechas posteriores.</p>
                             </div>
                             <div className="md:col-span-2">
                                 <Button type="submit" theme={loading ? 'Loading' : 'Primary'} disabled={loading}>
