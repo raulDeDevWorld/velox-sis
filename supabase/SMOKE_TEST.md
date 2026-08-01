@@ -15,6 +15,8 @@ Ejecutar sobre un proyecto limpio de prueba.
    - `orders.velox_unit_surcharge_snapshot` conserva la tarifa unitaria aplicada;
    - `orders.total` incluye el adicional por cada unidad;
    - `order_items.surcharge` coincide con el adicional unitario.
+   - una entrega para mañana a las `12:00` aplica automáticamente `later`;
+   - una entrega para mañana a las `12:01` no aplica Velox salvo activación manual.
 10. Editar un cliente seleccionado al registrar una orden y verificar `/Clientes`.
 11. Registrar una cuenta Cliente y comprobar que solo accede a sus rutas y órdenes.
 12. Convertir Cliente → Personal con sucursal y verificar que:

@@ -21,12 +21,12 @@ import { getCurrentHash } from '@/shared'
 import { customersRepository, ordersRepository, servicesRepository } from '@/features'
 import { useReactPath } from '@/HOCs/useReactPath'
 import { useMask } from '@react-input/mask';
-import { getBusinessDate, getDayMonthYearHour, getMonthYear, formatDayMonthYear, formatDayMonthYearInput, getDayMonthYearHourPluss3, isBusinessDateToday } from '@/utils/getDate'
+import { getBusinessDate, getDayMonthYearHour, getMonthYear, formatDayMonthYear, formatDayMonthYearInput, getDayMonthYearHourPluss3 } from '@/utils/getDate'
 import { generateUUID } from '@/utils/UIDgenerator'
 import Link from 'next/link'
 import dynamic from "next/dynamic";
 import { assignedBranchId, normalizeRole } from '@/utils/roleAccess'
-import { resolveVeloxType } from '@/utils/velox'
+import { isAutomaticVelox, resolveVeloxType } from '@/utils/velox'
 const InvoicePDF = dynamic(() => import("@/components/pdfDoc"), {
     ssr: false,
 });
@@ -174,10 +174,11 @@ function Home() {
     const selectedPickupDate = state['fecha para recojo']
         ? formatDayMonthYearInput(state['fecha para recojo'])
         : getDayMonthYearHourPluss3()
-    const automaticVelox = isBusinessDateToday(selectedPickupDate)
-    const veloxType = resolveVeloxType(selectedPickupDate, velox)
+    const selectedPickupTime = state['hora para recojo'] || '19:00'
+    const automaticVelox = isAutomaticVelox(selectedPickupDate, selectedPickupTime)
+    const veloxType = resolveVeloxType(selectedPickupDate, selectedPickupTime, velox)
     const isVelox = Boolean(veloxType)
-    const veloxUnitSurcharge = automaticVelox
+    const veloxUnitSurcharge = veloxType === 'same_day'
         ? toAmount(perfil?.adicionalDia)
         : toAmount(perfil?.adicionalPosterior)
     const pricedCart = Object.fromEntries(Object.entries(cart).map(([itemId, cartItem]) => {
@@ -229,6 +230,10 @@ function Home() {
     function onChangeHandlerDate(e) {
         setVelox(false)
         setState({ ...state, [e.target.name]: formatDayMonthYear(e.target.value) })
+    }
+    function onChangeHandlerPickupTime(e) {
+        setVelox(false)
+        setState({ ...state, [e.target.name]: e.target.value })
     }
 
     useEffect(() => {
@@ -725,7 +730,7 @@ function Home() {
                             </div>
                             <div>
                                 <Label htmlFor="hora para recojo" required>Hora para prenda</Label>
-                                <Input type="time" name="hora para recojo" id="email" onChange={onChangeHandler} defValue={state['hora para recojo'] && state['hora para recojo'] !== undefined ? state['hora para recojo'] : '19:00'} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="" require />
+                                <Input type="time" name="hora para recojo" id="hora-para-recojo" onChange={onChangeHandlerPickupTime} defValue={state['hora para recojo'] && state['hora para recojo'] !== undefined ? state['hora para recojo'] : '19:00'} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="" require />
                             </div>
                             <div>
                                 <Label htmlFor="ac" required>A cuenta</Label>
@@ -746,9 +751,9 @@ function Home() {
                                 </p>}
                             </div>
                             <div className=''>
-                                <Label htmlFor="velox">{automaticVelox ? 'Velox del día' : 'Velox después del día'}</Label>
+                                <Label htmlFor="velox">{veloxType === 'same_day' ? 'Velox del día' : 'Velox después del día'}</Label>
                                 <div className='flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-slate-50'>
-                                    <button type="button" disabled={automaticVelox} onClick={isVelox ? handlerLessVelox : handlerPlussVelox} className="rounded-full disabled:cursor-not-allowed" aria-pressed={isVelox} aria-label={automaticVelox ? 'Velox del día aplicado automáticamente' : isVelox ? 'Desactivar Velox' : 'Activar Velox'}>
+                                    <button type="button" disabled={automaticVelox} onClick={isVelox ? handlerLessVelox : handlerPlussVelox} className="rounded-full disabled:cursor-not-allowed" aria-pressed={isVelox} aria-label={automaticVelox ? `${veloxType === 'same_day' ? 'Velox del día' : 'Velox después del día'} aplicado automáticamente` : isVelox ? 'Desactivar Velox' : 'Activar Velox'}>
                                     {isVelox ? <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <circle cx="12.5" cy="12.5" r="12.5" fill="#32CD32" />
                                         <path fillRule="evenodd" clipRule="evenodd" d="M4 13.5L6.16667 11.3333L10.5 15.6667L19.1667 7L21.3333 9.16667L10.5 20L4 13.5Z" fill="white" />
@@ -762,7 +767,7 @@ function Home() {
                                         {isVelox ? `+ ${veloxSurcharge} Bs.` : 'Sin adicional'}
                                     </span>
                                 </div>
-                                {isVelox && <p className="mt-1.5 text-xs font-medium text-slate-500">{veloxUnitSurcharge} Bs. por cada unidad seleccionada. {automaticVelox ? 'Aplicación automática por entrega hoy.' : 'Aplicación manual para una fecha posterior.'}</p>}
+                                {isVelox && <p className="mt-1.5 text-xs font-medium text-slate-500">{veloxUnitSurcharge} Bs. por cada unidad seleccionada. {veloxType === 'same_day' ? 'Aplicación automática por entrega hoy.' : automaticVelox ? 'Aplicación automática por entrega mañana hasta las 12:00.' : 'Aplicación manual para una fecha posterior.'}</p>}
 
                             </div>
                             {pdf === false && <a href='#Client' className="hidden md:block"><Button type="button" theme="Transparent">Atras</Button></a>}

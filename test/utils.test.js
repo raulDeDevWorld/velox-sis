@@ -13,7 +13,7 @@ import {
   getMonthYear,
   isBusinessDateToday
 } from '../src/utils/getDate.js'
-import { resolveVeloxType } from '../src/utils/velox.js'
+import { isAutomaticVelox, nextBusinessDate, resolveVeloxType } from '../src/utils/velox.js'
 
 test('generateUUID returns a valid RFC 4122 v4 UUID', () => {
   assert.match(generateUUID(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
@@ -40,10 +40,16 @@ test('business date comparisons use the Bolivia calendar day', () => {
 
 test('Velox type is automatic today, manual later, and unavailable in the past', () => {
   const instant = new Date('2026-07-24T02:30:00.000Z') // 23 de julio en Bolivia
-  assert.equal(resolveVeloxType('2026-07-23', false, instant), 'same_day')
-  assert.equal(resolveVeloxType('2026-07-24', false, instant), null)
-  assert.equal(resolveVeloxType('2026-07-24', true, instant), 'later')
-  assert.equal(resolveVeloxType('2026-07-22', true, instant), null)
+  assert.equal(nextBusinessDate(instant), '2026-07-24')
+  assert.equal(resolveVeloxType('2026-07-23', '19:00', false, instant), 'same_day')
+  assert.equal(resolveVeloxType('2026-07-24', '11:59', false, instant), 'later')
+  assert.equal(resolveVeloxType('2026-07-24', '12:00', false, instant), 'later')
+  assert.equal(resolveVeloxType('2026-07-24', '12:01', false, instant), null)
+  assert.equal(resolveVeloxType('2026-07-24', '12:01', true, instant), 'later')
+  assert.equal(resolveVeloxType('2026-07-22', '10:00', true, instant), null)
+  assert.equal(isAutomaticVelox('2026-07-24', '12:00', instant), true)
+  assert.equal(isAutomaticVelox('2026-07-24', '12:01', instant), false)
+  assert.equal(nextBusinessDate(new Date('2026-12-31T16:00:00.000Z')), '2027-01-01')
 })
 
 test('PDF ticket sizing grows with wrapped content while preserving 80 mm width', () => {

@@ -51,6 +51,7 @@ test('Velox migration defines the final RPC explicitly and enforces pricing rule
   assert.match(splitVeloxMigration, /velox_unit_surcharge_snapshot/)
   assert.match(splitVeloxMigration, /PICKUP_DATE_IN_PAST/)
   assert.match(splitVeloxMigration, /ORDER_ITEMS_REQUIRED_FOR_PRICING_CHANGE/)
+  assert.match(splitVeloxMigration, /::time <= time '12:00'/)
   assert.doesNotMatch(splitVeloxMigration, /pg_get_functiondef|regexp_replace\(v_definition/)
 })
 

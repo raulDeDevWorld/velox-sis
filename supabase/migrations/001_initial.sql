@@ -848,6 +848,10 @@ begin
     if (v_pickup_at at time zone 'America/La_Paz')::date
        = (now() at time zone 'America/La_Paz')::date then
       v_velox_type := 'same_day'::public.velox_type;
+    elsif (v_pickup_at at time zone 'America/La_Paz')::date
+          = (now() at time zone 'America/La_Paz')::date + 1
+       and (v_pickup_at at time zone 'America/La_Paz')::time <= time '12:00' then
+      v_velox_type := 'later'::public.velox_type;
     elsif p_order ? 'velox_type' then
       v_velox_type := nullif(p_order->>'velox_type', '')::public.velox_type;
     elsif p_order ? 'is_velox' then

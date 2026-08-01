@@ -138,7 +138,7 @@ function ReceptionReceiptDocument({ order }) {
             <View style={styles.section}>
                 <View style={styles.totalRow}><Text style={styles.totalKey}>SUBTOTAL</Text><Text style={styles.totalValue}>{subtotal} Bs</Text></View>
                 {surcharge > 0 && <View style={styles.totalRow}><Text style={styles.totalKey}>ADICIONAL</Text><Text style={styles.totalValue}>{surcharge} Bs</Text></View>}
-                {velox > 0 && <View style={styles.totalRow}><Text style={styles.totalKey}>{order.veloxType === 'same_day' ? 'VELOX DEL DÍA' : 'VELOX POSTERIOR'}</Text><Text style={styles.totalValue}>{velox} Bs</Text></View>}
+                {velox > 0 && <View style={styles.totalRow}><Text style={styles.totalKey}>{order.veloxType === 'same_day' ? 'VELOX' : 'VELOX'}</Text><Text style={styles.totalValue}>{velox} Bs</Text></View>}
                 {toNumber(order.descuento) > 0 && <View style={styles.totalRow}><Text style={styles.totalKey}>DESCUENTO</Text><Text style={styles.totalValue}>-{order.descuento} Bs</Text></View>}
                 <View style={styles.totalRow}><Text style={styles.totalKey}>TOTAL</Text><Text style={styles.totalValue}>{total} Bs</Text></View>
                 <View style={styles.totalRow}><Text style={styles.totalKey}>A CUENTA</Text><Text style={styles.totalValue}>{order.ac || 0} Bs</Text></View>
