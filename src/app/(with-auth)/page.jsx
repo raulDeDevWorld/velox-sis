@@ -10,7 +10,7 @@ import Modal from '@/components/Modal'
 // import QRscanner from '@/components/QRscanner'
 import { useRouter } from 'next/navigation';
 import { WithAuth } from '@/HOCs/WithAuth'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 // import QrcodeDecoder from 'qrcode-decoder';
 import { QRreaderUtils } from '@/utils/QRreader'
 import { useState } from 'react'
@@ -170,6 +170,7 @@ function Home() {
     const [isQrPreviewOpen, setIsQrPreviewOpen] = useState(false)
     const [orderError, setOrderError] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const workflowScrollRef = useRef(null)
     const branchId = assignedBranchId(userDB)
     const selectedPickupDate = state['fecha para recojo']
         ? formatDayMonthYearInput(state['fecha para recojo'])
@@ -242,6 +243,10 @@ function Home() {
         }
         return ordersRepository.subscribeAll(setTareas)
     }, [branchId, normalizedUserRole, setTareas])
+
+    useEffect(() => {
+        workflowScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    }, [path])
 
     function HandlerOnChange(e) {
         QRreaderUtils(e, setFilterQR, setFilter, setPendienteDB)
@@ -527,7 +532,7 @@ function Home() {
                         })
                     }
                 </div>}
-                {userDB !== undefined && !isCustomer && <div className={`relative z-0 h-full w-full max-w-screen flex-col items-center overflow-y-auto bg-transparent px-4 pb-24 transition-all sm:px-5 lg:flex lg:h-[80vh] lg:pb-0 ${isWorkflowOpen ? 'flex' : 'hidden'} `} >
+                {userDB !== undefined && !isCustomer && <div ref={workflowScrollRef} className={`relative z-0 h-full w-full max-w-screen flex-col items-center overflow-y-auto bg-transparent px-4 pb-24 transition-all sm:px-5 lg:flex lg:h-[80vh] lg:pb-0 ${isWorkflowOpen ? 'flex' : 'hidden'} `} >
                     <div className='sticky top-0 z-30 w-full border-b border-slate-200 bg-white/90 py-3 backdrop-blur'>
                         <div className="flex items-center justify-between gap-3">
                             <div>
@@ -629,7 +634,8 @@ function Home() {
                             </table>
                             </>
                             : <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm font-medium text-slate-500">No tiene servicios asignados</div>}
-                        {Object.values(cart).length > 0 ? <div className='fixed bottom-[70px] left-0 z-30 w-full border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:relative md:bottom-auto md:border-0 md:bg-transparent md:p-5 md:px-0'>
+                        {Object.values(cart).length > 0 ? <div className='fixed bottom-[70px] left-0 z-30 grid w-full grid-cols-2 gap-3 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:relative md:bottom-auto md:block md:border-0 md:bg-transparent md:p-5 md:px-0'>
+                            <a href='#' className="md:hidden"><Button type="button" theme="Transparent">Añadir servicios</Button></a>
                             <a href='#Client'><Button type="button" theme="Primary">Continuar</Button></a>
                         </div>
                             : <Button type="button" theme="Primary" styled="md:hidden" click={() => router.replace('/')}>Añadir servicios</Button>}
@@ -637,8 +643,8 @@ function Home() {
 
                     {
                         isClientStep &&
-                        <form className={`mt-4 w-full max-w-[720px] space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:mt-5 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 md:p-6`}>
-                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 md:col-span-2 md:grid md:grid-cols-[1fr_auto] md:gap-3">
+                        <form className={`mt-4 w-full max-w-[720px] space-y-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:mt-5 md:grid md:grid-cols-2 md:gap-5 md:space-y-0 md:p-6`}>
+                            <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 md:col-span-2 md:grid md:grid-cols-[1fr_auto] md:gap-3 md:space-y-0">
                                 <Input type="text" name="autocomplete" id="autocomplete" onChange={onChangeHandler} valu={state.autocomplete || ''} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="Introduce el CI/DNI o WhatsApp" />
                                 <Button type="button" theme="Primary" click={autocompletar}>Autocompletar</Button>
                             </div>
@@ -681,7 +687,7 @@ function Home() {
                                 <Input type="text" name="whatsapp" id="whatsapp" onChange={onChangeHandler} valu={state.whatsapp || ''} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " reference={inputRefWhatsApp} placeholder="" require />
                             </div>
 
-                            <a href='#Services' className="hidden md:block"><Button type="button" theme="Transparent" >Atras</Button></a>
+                            <a href='#Services' className="block"><Button type="button" theme="Transparent">Volver a servicios</Button></a>
                             
                             
                             {hasClientData
@@ -696,7 +702,7 @@ function Home() {
                     }
                     {
                         isPaymentStep &&
-                        <form className={`mt-4 w-full max-w-[720px] space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:mt-5 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 md:p-6`} onSubmit={handlerSubmit}>
+                        <form className={`mt-4 w-full max-w-[720px] space-y-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:mt-5 md:grid md:grid-cols-2 md:gap-5 md:space-y-0 md:p-6`} onSubmit={handlerSubmit}>
                     
                             <div className="md:col-span-2">
                                 <Label htmlFor="metodo pago recepcion" required>Método de pago en recepción</Label>
@@ -770,7 +776,7 @@ function Home() {
                                 {isVelox && <p className="mt-1.5 text-xs font-medium text-slate-500">{veloxUnitSurcharge} Bs. por cada unidad seleccionada. {veloxType === 'same_day' ? 'Aplicación automática por entrega hoy.' : automaticVelox ? 'Aplicación automática por entrega mañana hasta las 12:00.' : 'Aplicación manual para una fecha posterior.'}</p>}
 
                             </div>
-                            {pdf === false && <a href='#Client' className="hidden md:block"><Button type="button" theme="Transparent">Atras</Button></a>}
+                            {pdf === false && <a href='#Client' className="block"><Button type="button" theme="Transparent">Volver al cliente</Button></a>}
                             {pdf === false && <Button type="submit" theme={isSubmitting ? 'Loading' : 'Primary'} disabled={hasInvalidPaymentAmount || isSubmitting}>Registrar</Button>}
                             {pdf && <div>
                                 <Button type="button" theme="Danger" click={finish}>Finalizar</Button>
