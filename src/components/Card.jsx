@@ -58,8 +58,8 @@ export default function Card({ nombre1, nombre2, nombre3, costo, url, empresa, d
     }
 
     return (
-        <div className="relative mt-4 grid w-full max-w-[500px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_45px_-32px_rgba(15,23,42,0.55)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_22px_55px_-34px_rgba(15,23,42,0.65)]" style={{ gridTemplateColumns: 'minmax(0,1fr) 140px', gridAutoFlow: 'dense' }}>
-            <div className="flex min-w-0 flex-col justify-start p-4 leading-normal">
+        <div className="relative mt-3 grid w-full max-w-[500px] grid-cols-[minmax(0,1fr)_112px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_16px_40px_-30px_rgba(15,23,42,0.5)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_22px_55px_-34px_rgba(15,23,42,0.65)] sm:mt-4 sm:grid-cols-[minmax(0,1fr)_140px]">
+            <div className="flex min-w-0 flex-col justify-start p-3.5 leading-normal sm:p-4">
                 <div className="flex w-full flex-col justify-between text-slate-950">
                     {i.categoria && <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-700">{i.categoria}</p>}
                     {alternativeNames.length > 0
@@ -83,11 +83,11 @@ export default function Card({ nombre1, nombre2, nombre3, costo, url, empresa, d
             </div>
 
             <div>
-                <div className="relative h-full min-h-[145px] w-[140px] bg-slate-50 text-center" >
+                <div className="relative h-full min-h-[132px] w-full bg-slate-50 text-center sm:min-h-[145px]" >
                     <img src={i.url} className='h-full w-full object-cover' alt="" />
                 </div>
             </div>
-            <div className='flex w-full items-center justify-start border-t border-slate-100 px-4 py-3'>
+            <div className='flex w-full items-center justify-start border-t border-slate-100 px-3.5 py-3 sm:px-4'>
                 {userRole !== 'Cliente'
                     ? <>
                         <div className="flex items-baseline rounded-full bg-slate-50 px-3 py-1">
@@ -102,7 +102,7 @@ export default function Card({ nombre1, nombre2, nombre3, costo, url, empresa, d
                     : <span className="text-sm font-semibold text-slate-600">{i['recepcion por'] || 'Servicio'}</span>
                 }
             </div>
-            <div className='flex items-center justify-end border-t border-slate-100 py-3 pr-4'>
+            <div className='flex items-center justify-end border-t border-slate-100 px-3.5 py-3 sm:pr-4'>
                 {userRole === 'Cliente'
                     ? <button
                         type="button"

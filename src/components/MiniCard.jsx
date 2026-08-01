@@ -3,7 +3,7 @@
 import Button from '@/components/Button'
 import { useUser } from '@/context'
 
-export default function Card({ i, inmediato, isVelox = false }) {
+export default function Card({ i, inmediato, isVelox = false, mobile = false }) {
 
     const { cart, setUserCart } = useUser()
     const quantity = Number.isFinite(Number(cart?.[i.uuid]?.cantidad)) ? Number(cart[i.uuid].cantidad) : 0
@@ -32,6 +32,26 @@ export default function Card({ i, inmediato, isVelox = false }) {
             ? setUserCart(obj)
             : setUserCart({ ...cart, [i.uuid]: { ...i, cantidad: cart[i.uuid].cantidad - 1 } })
     }
+    if (mobile) return <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+                <h3 className="truncate text-sm font-bold uppercase tracking-wide text-slate-950">{i['nombre 1']}</h3>
+                <p className="mt-1 text-xs font-semibold text-slate-500">{cost} Bs. por unidad</p>
+            </div>
+            <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-900">{quantity * (cost + surcharge)} Bs.</span>
+        </div>
+        <label className="mt-4 block text-xs font-semibold text-slate-600" htmlFor={`observacion-${i.uuid}`}>Observación</label>
+        <textarea id={`observacion-${i.uuid}`} rows="2" onChange={onChangeHandler} defaultValue={i.observacion || ''} className="mt-1.5 block min-h-[64px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100" placeholder="Sin observaciones"></textarea>
+        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+            <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Cantidad</span>
+            <div className="flex items-center gap-2">
+                <Button theme='MiniSecondary' click={addLessCart} aria-label={`Quitar una unidad de ${i['nombre 1']}`}>−</Button>
+                <span className="flex h-11 min-w-11 items-center justify-center rounded-xl bg-slate-100 px-3 text-sm font-bold text-slate-950">{quantity}</span>
+                <Button theme='MiniPrimary' click={addPlussCart} aria-label={`Añadir una unidad de ${i['nombre 1']}`}>+</Button>
+            </div>
+        </div>
+    </article>
+
     return (
 
             <tr>
@@ -52,7 +72,7 @@ export default function Card({ i, inmediato, isVelox = false }) {
                     </div>
                 </td> */}
                 <td className="min-w-[150px] text-center">
-                    <textarea id="message" rows="1" onChange={(e) => onChangeHandler(e, i)} cols="1" name='nombre de producto 1' defaultValue={i['nombre de producto 1']} className="block min-h-10 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100" placeholder="Escribe aqui..."></textarea>
+                    <textarea id={`observacion-tabla-${i.uuid}`} rows="1" onChange={onChangeHandler} cols="1" name='observacion' defaultValue={i.observacion || ''} className="block min-h-10 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-2 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100" placeholder="Escribe aquí..."></textarea>
                 {/* <Button theme='Primary' click={(e) => addObs(e, i)}>Observación</Button> */}
                 </td>
                 <td className="text-slate-900">

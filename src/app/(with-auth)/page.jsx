@@ -220,7 +220,7 @@ function Home() {
     const isWorkflowOpen = isServicesStep || isClientStep || isPaymentStep
     const hasClientData = Boolean(state.nombre && state.whatsapp && state.nombre !== '' && state.whatsapp !== '')
     const receptionPaymentMethod = state['metodo pago recepcion'] || 'Efectivo'
-    const stepLinkClass = active => `inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold transition ${active ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`
+    const stepLinkClass = active => `inline-flex h-10 w-full items-center justify-center rounded-xl px-2 text-center text-xs font-semibold transition sm:px-4 sm:text-sm ${active ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`
 
     function onChangeHandler(e) {
         if (e.target.name === 'autocomplete') setAutocompleteMatches([])
@@ -488,7 +488,7 @@ function Home() {
                 </div>
             </div>}
 
-            <div className={`h-[85vh] w-screen lg:w-full relative z-10 flex flex-col items-center lg:grid ${isCustomer ? 'lg:h-auto' : 'overflow-hidden'} `} style={{ gridTemplateColumns: !isCustomer && '500px auto', gridAutoFlow: 'dense' }}>
+            <div className={`relative z-10 flex h-[calc(100dvh-150px)] w-screen flex-col items-center lg:h-[85vh] lg:w-full lg:grid ${isCustomer ? 'lg:h-auto' : 'overflow-hidden'} `} style={{ gridTemplateColumns: !isCustomer && '500px auto', gridAutoFlow: 'dense' }}>
                 {<div className={`relative lg:bg-transparent overflow-y-scroll px-4 pb-[90px] sm:px-5  
                 ${isCustomer ? 'py-10 w-full' : 'w-full h-full'} 
                 ${isWorkflowOpen ? (isCustomer
@@ -522,7 +522,7 @@ function Home() {
                         })
                     }
                 </div>}
-                {userDB !== undefined && !isCustomer && <div className={`relative z-0 flex-col items-center w-full max-w-screen h-[80vh] overflow-y-scroll bg-transparent transition-all px-4 sm:px-5 lg:flex ${isWorkflowOpen ? 'flex' : 'hidden'} `} >
+                {userDB !== undefined && !isCustomer && <div className={`relative z-0 h-full w-full max-w-screen flex-col items-center overflow-y-auto bg-transparent px-4 pb-24 transition-all sm:px-5 lg:flex lg:h-[80vh] lg:pb-0 ${isWorkflowOpen ? 'flex' : 'hidden'} `} >
                     <div className='sticky top-0 z-30 w-full border-b border-slate-200 bg-white/90 py-3 backdrop-blur'>
                         <div className="flex items-center justify-between gap-3">
                             <div>
@@ -533,14 +533,14 @@ function Home() {
                                 {Object.values(cart).length} items
                             </div>
                         </div>
-                        <ul className="mt-4 flex gap-2 overflow-x-auto rounded-2xl bg-slate-50 p-1">
-                            <li className="shrink-0">
+                        <ul className="mt-4 grid grid-cols-3 gap-1 rounded-2xl bg-slate-50 p-1">
+                            <li>
                                 <a href='#Services' className={stepLinkClass(isServicesView)} >Servicios</a>
                             </li>
-                            <li className="shrink-0">
+                            <li>
                                 <a href='#Client' className={stepLinkClass(isClientStep)} >Cliente</a>
                             </li>
-                            <li className="shrink-0">
+                            <li>
                                 {hasClientData
                                     ? <a href='#Payment'
                                         className={stepLinkClass(isPaymentStep)} >Pago y saldo</a>
@@ -554,7 +554,21 @@ function Home() {
                     <div className={`relative w-full overflow-auto rounded-b-2xl bg-white/70 pt-4 ${isServicesView ? '' : 'hidden'} `}>
                         {Object.values(cart).length > 0
                             ? <>
-                            <table id="nueva-orden-table" className="admin-table min-w-[700px] overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                            <div className="grid gap-3 md:hidden">
+                                {Object.values(pricedCart).map((i) => <MiniCard
+                                    i={i}
+                                    inmediato={i.adicional}
+                                    isVelox={isVelox}
+                                    mobile
+                                    key={`mobile-${i.uuid}`}
+                                />)}
+                                <div className="rounded-2xl border border-slate-200 bg-slate-950 p-4 text-white shadow-sm">
+                                    <div className="flex items-center justify-between text-sm text-slate-300"><span>Subtotal</span><span>{cartTotal} Bs.</span></div>
+                                    {isVelox && <div className="mt-2 flex items-center justify-between text-sm text-emerald-300"><span>Adicional Velox</span><span>+ {veloxSurcharge} Bs.</span></div>}
+                                    <div className="mt-3 flex items-center justify-between border-t border-white/15 pt-3 text-base font-bold"><span>Total</span><span>{orderTotal} Bs.</span></div>
+                                </div>
+                            </div>
+                            <table id="nueva-orden-table" className="admin-table hidden min-w-[700px] overflow-hidden rounded-2xl border border-slate-200 bg-white md:table">
                                 <thead>
                                     <tr>
                                         <th scope="col" className="w-[200px]">
@@ -610,7 +624,7 @@ function Home() {
                             </table>
                             </>
                             : <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm font-medium text-slate-500">No tiene servicios asignados</div>}
-                        {Object.values(cart).length > 0 ? <div className='fixed left-0 md:relative w-full p-5 md:px-0'>
+                        {Object.values(cart).length > 0 ? <div className='fixed bottom-[70px] left-0 z-30 w-full border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:relative md:bottom-auto md:border-0 md:bg-transparent md:p-5 md:px-0'>
                             <a href='#Client'><Button type="button" theme="Primary">Continuar</Button></a>
                         </div>
                             : <Button type="button" theme="Primary" styled="md:hidden" click={() => router.replace('/')}>Añadir servicios</Button>}
@@ -618,7 +632,7 @@ function Home() {
 
                     {
                         isClientStep &&
-                        <form className={`w-full max-w-[720px] mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:grid md:grid-cols-2 md:gap-4 md:p-6`}>
+                        <form className={`mt-4 w-full max-w-[720px] space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:mt-5 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 md:p-6`}>
                             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 md:col-span-2 md:grid md:grid-cols-[1fr_auto] md:gap-3">
                                 <Input type="text" name="autocomplete" id="autocomplete" onChange={onChangeHandler} valu={state.autocomplete || ''} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="Introduce el CI/DNI o WhatsApp" />
                                 <Button type="button" theme="Primary" click={autocompletar}>Autocompletar</Button>
@@ -677,7 +691,7 @@ function Home() {
                     }
                     {
                         isPaymentStep &&
-                        <form className={`w-full max-w-[720px] mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:grid md:grid-cols-2 md:gap-4 md:p-6`} onSubmit={handlerSubmit}>
+                        <form className={`mt-4 w-full max-w-[720px] space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.45)] md:mt-5 md:grid md:grid-cols-2 md:gap-4 md:space-y-0 md:p-6`} onSubmit={handlerSubmit}>
                     
                             <div className="md:col-span-2">
                                 <Label htmlFor="metodo pago recepcion" required>Método de pago en recepción</Label>
@@ -765,8 +779,8 @@ function Home() {
 
 
             {Object.entries(cart).length !== 0 && !isCustomer && isCatalogStep
-                ? <div className="fixed lg:hidden w-screen sm:w-[500px] px-5 lg:px-0 lg:pr-[14px] bottom-[70px] lg:bottom-5 left-0 right-0 mx-auto z-20">
-                    <a href="#Services"><Button theme="SuccessBuy">Revisar orden ({Object.entries(cart).length})</Button></a>
+                ? <div className="fixed bottom-[70px] left-0 right-0 z-20 mx-auto w-screen border-t border-slate-200 bg-white/95 p-3 backdrop-blur sm:w-[500px] lg:hidden">
+                    <a href="#Services"><Button theme="SuccessBuy">Revisar orden <span className="rounded-full bg-white/20 px-2 py-0.5">{Object.entries(cart).length}</span></Button></a>
                 </div>
                 : null
             }
