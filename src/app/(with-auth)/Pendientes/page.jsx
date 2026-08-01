@@ -394,9 +394,6 @@ function Home() {
                                 A cuenta
                             </th>
                             <th scope="col" className="px-3 py-3">
-                                Descuento
-                            </th>
-                            <th scope="col" className="px-3 py-3">
                                 Saldo
                             </th>
                             <th scope="col" className="px-3 py-3">
@@ -481,15 +478,6 @@ function Home() {
                                             ? i['ac']
                                             : !isCustomer && <textarea id="message" rows="1" onChange={(e) => onChangeHandlerCalc(e, i)} cols="1" name='ac' className={`${editableAreaClass} text-center`} placeholder={i.ac ? i.ac : 0}></textarea>
                                         }
-                                    </td>
-                                    <td className="min-w-[90px] text-center">
-                                        {
-                                            i['descuento']
-                                        }
-                                        {/* {i['nombre receptor']
-                                            ? i['descuento']
-                                            : !isCustomer && <textarea id="message" rows="1" onChange={(e) => onChangeHandlerCalc(e, i)} cols="1" name='descuento' className={`${editableAreaClass} text-center`} placeholder={i.descuento ? i.descuento : 0}></textarea>
-                                        } */}
                                     </td>
                                     <td className="min-w-[90px] text-center font-semibold text-slate-900">
                                         {i['saldo'] - (state[i.uuid] && state[i.uuid].ac && state[i.uuid].ac !== undefined ? state[i.uuid].ac - i.ac : 0)}

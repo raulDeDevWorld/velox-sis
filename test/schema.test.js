@@ -6,6 +6,7 @@ const schema = readFileSync(new URL('../supabase/migrations/001_initial.sql', im
 const splitVeloxMigration = readFileSync(new URL('../supabase/migrations/002_split_velox_surcharges.sql', import.meta.url), 'utf8')
 const personalPage = readFileSync(new URL('../src/app/(with-auth)/Personal/page.jsx', import.meta.url), 'utf8')
 const receptionPage = readFileSync(new URL('../src/app/(with-auth)/page.jsx', import.meta.url), 'utf8')
+const customersData = readFileSync(new URL('../src/supabase/data/customers.js', import.meta.url), 'utf8')
 const hardening = readFileSync(new URL('../supabase/harden_personal_permissions.sql', import.meta.url), 'utf8')
 
 test('canonical schema links customer accounts directly to Supabase Auth', () => {
@@ -75,6 +76,18 @@ test('mobile reception keeps the catalog separate from the order workflow', () =
   assert.match(receptionPage, /window\.history\.pushState\(null, '', window\.location\.pathname\)/)
   assert.match(receptionPage, /href='#Services' className=\{stepLinkClass\(isServicesView\)\}/)
   assert.doesNotMatch(receptionPage, /Volver a servicios|Volver al cliente/)
+})
+
+test('discount remains supported by data rules but is hidden from reception', () => {
+  assert.match(schema, /discount numeric\(12,2\)/)
+  assert.match(schema, /p_order->>'discount'/)
+  assert.doesNotMatch(receptionPage, /name="descuento"/)
+})
+
+test('optional customer identity fields are sent as null instead of omitted RPC arguments', () => {
+  assert.match(customersData, /p_document: documentNumber \?\? null/)
+  assert.match(customersData, /p_whatsapp: whatsapp \?\? null/)
+  assert.match(customersData, /p_address: value\.direccion \?\? null/)
 })
 
 test('personal cannot mutate customers directly or read other staff profiles', () => {

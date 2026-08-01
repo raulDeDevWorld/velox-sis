@@ -194,10 +194,10 @@ export async function upsertProfileOrCustomer(id, value, callback) {
   if (value?.rol === 'Cliente') {
     const { data, error } = await supabase.rpc('register_customer_profile', {
       p_profile_id: id,
-      p_name: value.nombre,
-      p_document: value.CI,
-      p_address: value.direccion,
-      p_whatsapp: value.whatsapp
+      p_name: value.nombre ?? null,
+      p_document: value.CI ?? null,
+      p_address: value.direccion ?? null,
+      p_whatsapp: value.whatsapp ?? null
     })
     if (error) throw error
     callback?.({ ...value, customer_id: data })
@@ -221,8 +221,8 @@ export async function upsertProfileOrCustomer(id, value, callback) {
 
 export async function validateCustomerIdentity(documentNumber, whatsapp) {
   const { data, error } = await supabase.rpc('customer_identity_status', {
-    p_document: documentNumber,
-    p_whatsapp: whatsapp
+    p_document: documentNumber ?? null,
+    p_whatsapp: whatsapp ?? null
   })
   if (error) throw error
   return data

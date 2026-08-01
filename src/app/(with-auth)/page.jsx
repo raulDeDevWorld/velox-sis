@@ -641,7 +641,7 @@ function Home() {
                             </>
                             : <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm font-medium text-slate-500">No tiene servicios asignados</div>}
                         {Object.values(cart).length > 0 ? <div className='fixed bottom-[70px] left-0 z-30 grid w-full grid-cols-2 gap-3 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:relative md:bottom-auto md:block md:border-0 md:bg-transparent md:p-5 md:px-0'>
-                            <a href='/' onClick={openServiceCatalog} className="md:hidden"><Button type="button" theme="Transparent">Añadir servicios</Button></a>
+                            <Link href='/' onClick={openServiceCatalog} className="md:hidden"><Button type="button" theme="Transparent">Añadir servicios</Button></Link>
                             <a href='#Client'><Button type="button" theme="Primary">Continuar</Button></a>
                         </div>
                             : <Button type="button" theme="Primary" styled="md:hidden" click={() => router.replace('/')}>Añadir servicios</Button>}
@@ -745,11 +745,6 @@ function Home() {
                                 <Label htmlFor="ac" required>A cuenta</Label>
                                 <Input type="text" name="ac" id="email" onChange={onChangeHandler} defValue={state.ac && state.ac !== undefined ? state.ac : 0} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="" require />
                             </div>
-                            <div>
-                                <Label htmlFor="descuento">Descuento</Label>
-                                <Input type="text" name="descuento" id="email" onChange={onChangeHandler} defValue={state.descuento && state.descuento !== undefined ? state.descuento : 0} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " placeholder="" />
-                            </div>
-
                             <div>
                                 <Label htmlFor="saldo">Saldo</Label>
                                 <span className={`block h-11 w-full rounded-xl border px-3.5 py-2.5 text-sm font-semibold ${hasInvalidPaymentAmount ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50 text-slate-950'}`} >

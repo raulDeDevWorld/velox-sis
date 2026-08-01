@@ -67,7 +67,7 @@ const ticketSize = (order, includeNotes) => {
         const detail = `${item['nombre 1'] || item.nombre || ''}${item.observacion ? ` · Obs: ${item.observacion}` : ''}`
         return height + Math.max(8.4, textBlockHeight(detail, detailWidth, 7)) + 4.3
     }, 0)
-    const totalRows = 4 + (lineSurchargeTotal(order) > 0 ? 1 : 0) + (veloxTotal(order) > 0 ? 1 : 0) + (toNumber(order.descuento) > 0 ? 1 : 0)
+    const totalRows = 4 + (lineSurchargeTotal(order) > 0 ? 1 : 0) + (veloxTotal(order) > 0 ? 1 : 0)
     const pickupRows = [order['fecha para recojo'], order['hora para recojo'], order.velox].filter(Boolean).length
     const notesHeight = includeNotes
         ? 17.4 + receptionNotes.reduce((height, note) => height + 2 + textBlockHeight(note, contentWidth, 5), 0)
@@ -139,7 +139,6 @@ function ReceptionReceiptDocument({ order }) {
                 <View style={styles.totalRow}><Text style={styles.totalKey}>SUBTOTAL</Text><Text style={styles.totalValue}>{subtotal} Bs</Text></View>
                 {surcharge > 0 && <View style={styles.totalRow}><Text style={styles.totalKey}>ADICIONAL</Text><Text style={styles.totalValue}>{surcharge} Bs</Text></View>}
                 {velox > 0 && <View style={styles.totalRow}><Text style={styles.totalKey}>{order.veloxType === 'same_day' ? 'VELOX' : 'VELOX'}</Text><Text style={styles.totalValue}>{velox} Bs</Text></View>}
-                {toNumber(order.descuento) > 0 && <View style={styles.totalRow}><Text style={styles.totalKey}>DESCUENTO</Text><Text style={styles.totalValue}>-{order.descuento} Bs</Text></View>}
                 <View style={styles.totalRow}><Text style={styles.totalKey}>TOTAL</Text><Text style={styles.totalValue}>{total} Bs</Text></View>
                 <View style={styles.totalRow}><Text style={styles.totalKey}>A CUENTA</Text><Text style={styles.totalValue}>{order.ac || 0} Bs</Text></View>
                 <View style={styles.totalRow}><Text style={styles.balanceKey}>SALDO</Text><Text style={styles.balanceValue}>{order.saldo || 0} Bs</Text></View>
