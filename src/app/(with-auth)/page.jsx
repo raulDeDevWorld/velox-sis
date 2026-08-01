@@ -236,6 +236,12 @@ function Home() {
         setVelox(false)
         setState({ ...state, [e.target.name]: e.target.value })
     }
+    function openServiceCatalog(e) {
+        e?.preventDefault()
+        if (typeof window === 'undefined') return
+        window.history.pushState(null, '', window.location.pathname)
+        window.dispatchEvent(new PopStateEvent('popstate'))
+    }
 
     useEffect(() => {
         if (normalizedUserRole === 'personal' && branchId) {
@@ -545,7 +551,7 @@ function Home() {
                         </div>
                         <ul className="mt-4 grid grid-cols-3 gap-1 rounded-2xl bg-slate-50 p-1">
                             <li>
-                                <a href='#Services' className={stepLinkClass(isServicesView)} >Servicios</a>
+                                <a href='#Services' className={stepLinkClass(isServicesView)}>Servicios</a>
                             </li>
                             <li>
                                 <a href='#Client' className={stepLinkClass(isClientStep)} >Cliente</a>
@@ -635,7 +641,7 @@ function Home() {
                             </>
                             : <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm font-medium text-slate-500">No tiene servicios asignados</div>}
                         {Object.values(cart).length > 0 ? <div className='fixed bottom-[70px] left-0 z-30 grid w-full grid-cols-2 gap-3 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:relative md:bottom-auto md:block md:border-0 md:bg-transparent md:p-5 md:px-0'>
-                            <a href='#' className="md:hidden"><Button type="button" theme="Transparent">Añadir servicios</Button></a>
+                            <a href='/' onClick={openServiceCatalog} className="md:hidden"><Button type="button" theme="Transparent">Añadir servicios</Button></a>
                             <a href='#Client'><Button type="button" theme="Primary">Continuar</Button></a>
                         </div>
                             : <Button type="button" theme="Primary" styled="md:hidden" click={() => router.replace('/')}>Añadir servicios</Button>}
@@ -687,9 +693,6 @@ function Home() {
                                 <Input type="text" name="whatsapp" id="whatsapp" onChange={onChangeHandler} valu={state.whatsapp || ''} className="bg-gray-50 border border-gray-300 text-gray-900 text-[16px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5    " reference={inputRefWhatsApp} placeholder="" require />
                             </div>
 
-                            <a href='#Services' className="block"><Button type="button" theme="Transparent">Volver a servicios</Button></a>
-                            
-                            
                             {hasClientData
                                     ? <a href='#Payment' className="block" ><Button type="button" theme="Primary">Continuar</Button></a>
 
@@ -776,7 +779,6 @@ function Home() {
                                 {isVelox && <p className="mt-1.5 text-xs font-medium text-slate-500">{veloxUnitSurcharge} Bs. por cada unidad seleccionada. {veloxType === 'same_day' ? 'Aplicación automática por entrega hoy.' : automaticVelox ? 'Aplicación automática por entrega mañana hasta las 12:00.' : 'Aplicación manual para una fecha posterior.'}</p>}
 
                             </div>
-                            {pdf === false && <a href='#Client' className="block"><Button type="button" theme="Transparent">Volver al cliente</Button></a>}
                             {pdf === false && <Button type="submit" theme={isSubmitting ? 'Loading' : 'Primary'} disabled={hasInvalidPaymentAmount || isSubmitting}>Registrar</Button>}
                             {pdf && <div>
                                 <Button type="button" theme="Danger" click={finish}>Finalizar</Button>

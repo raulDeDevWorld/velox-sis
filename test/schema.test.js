@@ -72,6 +72,9 @@ test('mobile reception keeps the catalog separate from the order workflow', () =
   assert.match(receptionPage, /const isServicesStep = currentHash === '#Services'/)
   assert.match(receptionPage, /const isServicesView = isCatalogStep \|\| isServicesStep/)
   assert.match(receptionPage, /!isCustomer && isCatalogStep/)
+  assert.match(receptionPage, /window\.history\.pushState\(null, '', window\.location\.pathname\)/)
+  assert.match(receptionPage, /href='#Services' className=\{stepLinkClass\(isServicesView\)\}/)
+  assert.doesNotMatch(receptionPage, /Volver a servicios|Volver al cliente/)
 })
 
 test('personal cannot mutate customers directly or read other staff profiles', () => {
