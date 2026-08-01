@@ -212,7 +212,9 @@ function Home() {
     const userRole = userDB?.rol || userDB?.role
     const normalizedUserRole = normalizeRole(userRole)
     const isCustomer = normalizedUserRole === 'cliente'
-    const isServicesStep = currentHash === '' || currentHash === '#' || currentHash === '#Services'
+    const isCatalogStep = currentHash === '' || currentHash === '#'
+    const isServicesStep = currentHash === '#Services'
+    const isServicesView = isCatalogStep || isServicesStep
     const isClientStep = currentHash === '#Client'
     const isPaymentStep = currentHash === '#Payment' || currentHash === '#QR' || currentHash === '#Saldo'
     const isWorkflowOpen = isServicesStep || isClientStep || isPaymentStep
@@ -399,7 +401,7 @@ function Home() {
         setModal('')
 
         if (typeof window !== 'undefined') {
-            window.history.replaceState(null, '', `${window.location.pathname}#Services`)
+            window.history.replaceState(null, '', window.location.pathname)
             window.dispatchEvent(new PopStateEvent('popstate'))
             window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
         }
@@ -533,7 +535,7 @@ function Home() {
                         </div>
                         <ul className="mt-4 flex gap-2 overflow-x-auto rounded-2xl bg-slate-50 p-1">
                             <li className="shrink-0">
-                                <a href='#Services' className={stepLinkClass(isServicesStep)} >Servicios</a>
+                                <a href='#Services' className={stepLinkClass(isServicesView)} >Servicios</a>
                             </li>
                             <li className="shrink-0">
                                 <a href='#Client' className={stepLinkClass(isClientStep)} >Cliente</a>
@@ -549,7 +551,7 @@ function Home() {
                             </li>
                         </ul>
                     </div>
-                    <div className={`relative w-full overflow-auto rounded-b-2xl bg-white/70 pt-4 ${isServicesStep ? '' : 'hidden'} `}>
+                    <div className={`relative w-full overflow-auto rounded-b-2xl bg-white/70 pt-4 ${isServicesView ? '' : 'hidden'} `}>
                         {Object.values(cart).length > 0
                             ? <>
                             <table id="nueva-orden-table" className="admin-table min-w-[700px] overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -611,7 +613,7 @@ function Home() {
                         {Object.values(cart).length > 0 ? <div className='fixed left-0 md:relative w-full p-5 md:px-0'>
                             <a href='#Client'><Button type="button" theme="Primary">Continuar</Button></a>
                         </div>
-                            : <Button type="button" theme="Primary" styled="md:hidden" click={() => router.replace('/')}>Atras</Button>}
+                            : <Button type="button" theme="Primary" styled="md:hidden" click={() => router.replace('/')}>Añadir servicios</Button>}
                     </div>
 
                     {
@@ -762,9 +764,9 @@ function Home() {
             </div >
 
 
-            {Object.entries(cart).length !== 0 && !isCustomer && isServicesStep
+            {Object.entries(cart).length !== 0 && !isCustomer && isCatalogStep
                 ? <div className="fixed lg:hidden w-screen sm:w-[500px] px-5 lg:px-0 lg:pr-[14px] bottom-[70px] lg:bottom-5 left-0 right-0 mx-auto z-20">
-                    <a href="#Services"><Button theme="SuccessBuy">Asignar Servicio</Button></a>
+                    <a href="#Services"><Button theme="SuccessBuy">Revisar orden ({Object.entries(cart).length})</Button></a>
                 </div>
                 : null
             }

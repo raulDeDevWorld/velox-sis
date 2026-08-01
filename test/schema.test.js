@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 const schema = readFileSync(new URL('../supabase/migrations/001_initial.sql', import.meta.url), 'utf8')
 const splitVeloxMigration = readFileSync(new URL('../supabase/migrations/002_split_velox_surcharges.sql', import.meta.url), 'utf8')
 const personalPage = readFileSync(new URL('../src/app/(with-auth)/Personal/page.jsx', import.meta.url), 'utf8')
+const receptionPage = readFileSync(new URL('../src/app/(with-auth)/page.jsx', import.meta.url), 'utf8')
 const hardening = readFileSync(new URL('../supabase/harden_personal_permissions.sql', import.meta.url), 'utf8')
 
 test('canonical schema links customer accounts directly to Supabase Auth', () => {
@@ -63,6 +64,13 @@ test('canonical Velox schema stores an immutable type and unit-price snapshot', 
 
 test('Personal page contains no call to an undefined redirect helper', () => {
   assert.doesNotMatch(personalPage, /\bredirect\s*\(/)
+})
+
+test('mobile reception keeps the catalog separate from the order workflow', () => {
+  assert.match(receptionPage, /const isCatalogStep = currentHash === '' \|\| currentHash === '#'/)
+  assert.match(receptionPage, /const isServicesStep = currentHash === '#Services'/)
+  assert.match(receptionPage, /const isServicesView = isCatalogStep \|\| isServicesStep/)
+  assert.match(receptionPage, /!isCustomer && isCatalogStep/)
 })
 
 test('personal cannot mutate customers directly or read other staff profiles', () => {
